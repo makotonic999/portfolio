@@ -4,6 +4,26 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Architecture | Okada Makoto</title>
+
+  <!-- SEO -->
+  <meta name="description" content="本ポートフォリオサイトのシステムアーキテクチャ。S3+CloudFront+OAC、Route53+ACMのクロスアカウント構成、API Gateway+Lambda+SES、Terraform、GitHub Actions(OIDC)による年間約1,500円のサーバーレス構成を解説。" />
+  <link rel="canonical" href="https://okada-chikuro-kougyousyo.com/architecture.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="システムアーキテクチャ | Okada Makoto" />
+  <meta property="og:description" content="AWSサーバーレス・マネージドサービスのみで構成した、年間約1,500円運用のポートフォリオ基盤の設計解説。" />
+  <meta property="og:url" content="https://okada-chikuro-kougyousyo.com/architecture.html" />
+  <meta property="og:site_name" content="Okada Makoto Portfolio" />
+  <meta property="og:locale" content="ja_JP" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="システムアーキテクチャ | Okada Makoto" />
+  <meta name="twitter:description" content="AWSサーバーレス構成の設計解説（年間約1,500円運用）。" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -41,6 +61,7 @@
         <a href="index.html#skills" class="hover:text-github-text transition-colors">Skills</a>
         <a href="index.html#works" class="hover:text-github-text transition-colors">Works</a>
         <a href="architecture.html" class="text-github-text transition-colors">Architecture</a>
+        <a href="https://dive.okada-chikuro-kougyousyo.com" target="_blank" rel="noopener" class="hover:text-github-text transition-colors">DIVE</a>
         <a href="index.html#contact" class="hover:text-github-text transition-colors">Contact</a>
       </nav>
     </div>
@@ -174,7 +195,7 @@ flowchart TD
     </div>
 
     <div class="flex gap-4 mt-8">
-      <a href="https://github.com/makotonic999/aws-serverless-corporate-site" target="_blank"
+      <a href="https://github.com/makotonic999/aws-serverless-corporate-site" target="_blank" rel="noopener"
         class="px-5 py-2 bg-github-blue hover:bg-github-blue-hover text-white text-sm rounded-md transition-colors">GitHubで見る</a>
       <a href="index.html"
         class="px-5 py-2 bg-github-surface hover:bg-github-border text-github-text text-sm rounded-md border border-github-border transition-colors">Homeに戻る</a>
@@ -185,7 +206,7 @@ flowchart TD
   <footer class="border-t border-github-border">
     <div class="max-w-5xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-github-muted">
       <span>&copy; Okada Makoto. All rights reserved.</span>
-      <a href="https://github.com/makotonic999" target="_blank" class="hover:text-github-text transition-colors">github.com/makotonic999</a>
+      <a href="https://github.com/makotonic999" target="_blank" rel="noopener" class="hover:text-github-text transition-colors">github.com/makotonic999</a>
     </div>
   </footer>
 
