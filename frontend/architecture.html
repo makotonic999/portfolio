@@ -9,21 +9,21 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4073453569684791" crossorigin="anonymous"></script>
 
   <!-- SEO -->
-  <meta name="description" content="本ポートフォリオサイトのシステムアーキテクチャ。S3+CloudFront+OAC、Route53+ACMのクロスアカウント構成、API Gateway+Lambda+SES、Terraform、GitHub Actions(OIDC)による年間約1,500円のサーバーレス構成を解説。" />
+  <meta name="description" content="AWSインフラの設計・構築・IaCを一気通貫で対応した個人開発ポートフォリオ基盤の設計解説。要件・制約からアーキテクチャを設計し、S3+CloudFront+OAC、クロスアカウントRoute53+ACM、API Gateway+Lambda+SES、Terraform(リモートステート/State Lock)、GitHub Actions OIDCで実装。年間約1,500円運用。" />
   <link rel="canonical" href="https://okada-chikuro-kougyousyo.com/architecture.html" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="システムアーキテクチャ | Okada Makoto" />
-  <meta property="og:description" content="AWSサーバーレス・マネージドサービスのみで構成した、年間約1,500円運用のポートフォリオ基盤の設計解説。" />
+  <meta property="og:title" content="システムアーキテクチャ設計 | Okada Makoto" />
+  <meta property="og:description" content="要件・制約・セキュリティ・コスト・運用性を考慮したAWSアーキテクチャ設計と、Terraformによる実装の解説。" />
   <meta property="og:url" content="https://okada-chikuro-kougyousyo.com/architecture.html" />
   <meta property="og:site_name" content="Okada Makoto Portfolio" />
   <meta property="og:locale" content="ja_JP" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="システムアーキテクチャ | Okada Makoto" />
-  <meta name="twitter:description" content="AWSサーバーレス構成の設計解説（年間約1,500円運用）。" />
+  <meta name="twitter:title" content="システムアーキテクチャ設計 | Okada Makoto" />
+  <meta name="twitter:description" content="AWSアーキテクチャの設計判断とTerraform実装の解説（年間約1,500円運用）。" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -73,19 +73,38 @@
   <!-- Hero -->
   <section class="max-w-5xl mx-auto px-6 py-16">
     <p class="text-github-muted text-sm mb-2">Works / aws-serverless-corporate-site</p>
-    <h1 class="text-4xl font-bold mb-4">システムアーキテクチャ</h1>
-    <p class="text-github-muted max-w-2xl leading-relaxed">
-      本サイトはレンタルサーバーや常時稼働インスタンスを一切使用せず、AWSのサーバーレス・マネージドサービスのみで構成しています。
-      <strong class="text-github-text">年間コスト約1,500円</strong>での運用を実現しながら、高パフォーマンス・高セキュリティを両立しています。
+    <h1 class="text-4xl font-bold mb-4">システムアーキテクチャ設計</h1>
+    <p class="text-github-muted max-w-3xl leading-relaxed">
+      本サイトは、レンタルサーバーや常時稼働インスタンスを一切使用せず、AWSのサーバーレス・マネージドサービスのみで構成しています。
+      「どのサービスを使ったか」だけでなく、<strong class="text-github-text">どのような要件・制約のもとで、なぜその構成を選び、どうIaC化・自動化したか</strong>という設計判断を軸に整理しています。
+      個人開発という制約下で、<strong class="text-github-text">可用性・セキュリティ・コスト・運用性のバランス</strong>を取りながら、年間コスト約1,500円での運用を実現しました。
     </p>
+
+    <!-- Quick nav -->
+    <nav class="flex flex-wrap gap-2 mt-8 text-xs">
+      <a href="#overview" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">Overview</a>
+      <a href="#requirements" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">Requirements</a>
+      <a href="#decisions" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">Design Decisions</a>
+      <a href="#selection" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">Service Selection</a>
+      <a href="#security" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">Security</a>
+      <a href="#iac" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">IaC / Terraform</a>
+      <a href="#cicd" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">CI/CD</a>
+      <a href="#cost" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">Cost</a>
+      <a href="#operations" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">Operations</a>
+      <a href="#summary" class="px-3 py-1 bg-github-surface border border-github-border rounded-full text-github-muted hover:text-github-text transition-colors">Summary</a>
+    </nav>
   </section>
 
   <div class="border-t border-github-border"></div>
 
-  <!-- Diagram -->
-  <section class="max-w-5xl mx-auto px-6 py-16">
-    <h2 class="text-xl font-bold mb-6">構成図</h2>
-    <div class="bg-github-surface border border-github-border rounded-lg p-6">
+  <!-- 1. Architecture Overview -->
+  <section id="overview" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-2">1. Architecture Overview</h2>
+    <p class="text-sm text-github-muted mb-6 max-w-3xl leading-relaxed">
+      システム全体を役割ごとのレイヤーに分割して設計しています。各レイヤーはマネージドサービスで構成し、常時稼働サーバーを持たないことを前提にしています。
+    </p>
+
+    <div class="bg-github-surface border border-github-border rounded-lg p-6 mb-8">
       <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
         mermaid.initialize({ startOnLoad: true, theme: 'dark' });
@@ -116,54 +135,155 @@ flowchart TD
     GHA -->|Dockerイメージ| ECR
       </div>
     </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">Frontend / Static Delivery</h3>
+        <p class="text-sm text-github-muted leading-relaxed">静的コンテンツをS3に格納し、CloudFrontのエッジキャッシュ経由で配信。S3は非公開とし、OAC経由のアクセスのみを許可。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">DNS / TLS</h3>
+        <p class="text-sm text-github-muted leading-relaxed">Route 53でドメインを名前解決し、ACM発行の証明書でTLSを終端。ホストゾーンは別AWSアカウントで管理。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">Backend API</h3>
+        <p class="text-sm text-github-muted leading-relaxed">お問い合わせ処理をAPI Gateway (HTTP API) + Lambda (Python 3.12) で構成。リクエスト発生時のみ実行。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">Email Delivery</h3>
+        <p class="text-sm text-github-muted leading-relaxed">LambdaからSES経由でお問い合わせ内容を管理者宛に送信。返信先には送信者アドレスを設定。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">Infrastructure as Code</h3>
+        <p class="text-sm text-github-muted leading-relaxed">全AWSリソースをTerraformで定義。S3リモートステート + State Lockで構成変更を安全に管理。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">CI/CD</h3>
+        <p class="text-sm text-github-muted leading-relaxed">GitHub ActionsからOIDCでAWSへ認証し、フロント配信・バックエンドのECRプッシュを自動化。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5 sm:col-span-2">
+        <h3 class="font-semibold text-sm mb-1">Monitoring</h3>
+        <p class="text-sm text-github-muted leading-relaxed">CloudWatch AlarmでLambdaエラー / API Gateway 5xxを監視し、検知時はSNS経由でメール通知。</p>
+      </div>
+    </div>
   </section>
 
   <div class="border-t border-github-border"></div>
 
-  <!-- Design Points -->
-  <section class="max-w-5xl mx-auto px-6 py-16">
-    <h2 class="text-xl font-bold mb-6">設計のポイント</h2>
+  <!-- 2. Design Requirements / Constraints -->
+  <section id="requirements" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-2">2. Design Requirements / Constraints</h2>
+    <p class="text-sm text-github-muted mb-6 max-w-3xl leading-relaxed">
+      この構成を設計する際に重視した要件・制約を明示します。以降の設計判断は、すべてこれらの前提から導いています。
+    </p>
+    <div class="bg-github-surface border border-github-border rounded-lg p-6">
+      <ul class="grid gap-3 sm:grid-cols-2 text-sm text-github-muted">
+        <li class="flex gap-2"><span class="text-github-blue-hover">▸</span>個人開発のため、運用コストを極力抑える</li>
+        <li class="flex gap-2"><span class="text-github-blue-hover">▸</span>常時稼働サーバーを持たない</li>
+        <li class="flex gap-2"><span class="text-github-blue-hover">▸</span>S3を直接インターネット公開しない</li>
+        <li class="flex gap-2"><span class="text-github-blue-hover">▸</span>AWSマネージドサービスを優先し、運用負荷を下げる</li>
+        <li class="flex gap-2"><span class="text-github-blue-hover">▸</span>デプロイを自動化する</li>
+        <li class="flex gap-2"><span class="text-github-blue-hover">▸</span>AWS認証情報をGitHub Actionsに直接保存しない</li>
+        <li class="flex gap-2"><span class="text-github-blue-hover">▸</span>Terraformでインフラ構成をコード管理する</li>
+        <li class="flex gap-2"><span class="text-github-blue-hover">▸</span>複数AWSアカウントを安全に利用する</li>
+        <li class="flex gap-2 sm:col-span-2"><span class="text-github-blue-hover">▸</span>障害・構成変更に対して、復旧・変更しやすい構成にする</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- 3. Design Decisions -->
+  <section id="decisions" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-2">3. Design Decisions</h2>
+    <p class="text-sm text-github-muted mb-6 max-w-3xl leading-relaxed">
+      主要な構成要素について、【課題・要件】→【選択した構成】→【選択理由】→【得られたメリット】→【トレードオフ】の流れで設計判断を整理します。
+    </p>
     <div class="flex flex-col gap-4">
 
+      <!-- Decision card 1 -->
       <div class="bg-github-surface border border-github-border rounded-lg p-6">
-        <h3 class="font-semibold mb-2">1. 静的配信層 ― S3 + CloudFront + OAC</h3>
-        <p class="text-sm text-github-muted leading-relaxed">
-          S3バケットはパブリックアクセスを完全遮断し、CloudFrontからのアクセスのみをOAC（Origin Access Control）で許可。
-          CloudFrontのエッジキャッシュにより世界中から高速アクセスが可能で、S3への直接アクセスを排除することでセキュリティを強化しています。
-        </p>
+        <h3 class="font-semibold mb-4">① 静的配信層 ― S3 + CloudFront + OAC</h3>
+        <dl class="grid gap-3 text-sm sm:grid-cols-[8rem_1fr]">
+          <dt class="text-github-blue-hover font-medium">課題・要件</dt>
+          <dd class="text-github-muted leading-relaxed">静的コンテンツを低コストで配信しつつ、S3を直接インターネット公開したくない。</dd>
+          <dt class="text-github-blue-hover font-medium">選択した構成</dt>
+          <dd class="text-github-muted leading-relaxed">S3（非公開）+ CloudFront + OAC（Origin Access Control）。バケットポリシーはCloudFrontディストリビューションの<code class="text-github-text bg-github-bg px-1 rounded">SourceArn</code>条件付きで<code class="text-github-text bg-github-bg px-1 rounded">s3:GetObject</code>のみ許可。</dd>
+          <dt class="text-github-blue-hover font-medium">選択理由</dt>
+          <dd class="text-github-muted leading-relaxed">S3を非公開にしたままCloudFront経由で配信でき、常時稼働サーバーが不要なため。OACはOAIの後継として推奨される方式。</dd>
+          <dt class="text-github-blue-hover font-medium">メリット</dt>
+          <dd class="text-github-muted leading-relaxed">エッジキャッシュによる高速配信、S3直アクセスの排除によるセキュリティ強化、サーバーレスによる低運用負荷を同時に実現。</dd>
+          <dt class="text-github-blue-hover font-medium">トレードオフ</dt>
+          <dd class="text-github-muted leading-relaxed">単純なS3静的ウェブサイトホスティングより構成要素が増え、キャッシュ無効化（Invalidation）の考慮が必要になる。</dd>
+        </dl>
       </div>
 
+      <!-- Decision card 2 -->
       <div class="bg-github-surface border border-github-border rounded-lg p-6">
-        <h3 class="font-semibold mb-2">2. ドメイン・SSL/TLS ― Route 53 + ACM（クロスアカウント構成）</h3>
-        <p class="text-sm text-github-muted leading-relaxed">
-          Route 53のホストゾーンは別AWSアカウントで管理しており、Terraformの<code class="text-github-text bg-github-bg px-1 rounded">assume_role</code>を使ったクロスアカウント構成でDNSレコードを自動作成。
-          ACM証明書はCloudFront要件に合わせus-east-1で発行し、DNS検証も自動化しています。
-        </p>
+        <h3 class="font-semibold mb-4">② DNS / TLS ― Route 53 + ACM（クロスアカウント構成）</h3>
+        <dl class="grid gap-3 text-sm sm:grid-cols-[8rem_1fr]">
+          <dt class="text-github-blue-hover font-medium">課題・要件</dt>
+          <dd class="text-github-muted leading-relaxed">DNSを管理するアカウントと、アプリ用リソースを構築するアカウントを分離しつつ、証明書のDNS検証を自動化したい。</dd>
+          <dt class="text-github-blue-hover font-medium">選択した構成</dt>
+          <dd class="text-github-muted leading-relaxed">Route 53ホストゾーンは管理アカウントで保持し、Terraformの<code class="text-github-text bg-github-bg px-1 rounded">assume_role</code>で操作。ACM証明書はCloudFront要件に合わせ<code class="text-github-text bg-github-bg px-1 rounded">us-east-1</code>で発行し、DNS検証レコードをRoute 53に自動作成。</dd>
+          <dt class="text-github-blue-hover font-medium">選択理由</dt>
+          <dd class="text-github-muted leading-relaxed">DNSのような共有度の高いリソースを別アカウントに隔離し、権限委譲（assume_role）で必要な操作だけを許可するため。</dd>
+          <dt class="text-github-blue-hover font-medium">メリット</dt>
+          <dd class="text-github-muted leading-relaxed">アカウント境界による影響範囲の分離と、証明書発行・DNS検証の完全自動化を両立。</dd>
+          <dt class="text-github-blue-hover font-medium">トレードオフ</dt>
+          <dd class="text-github-muted leading-relaxed">マルチプロバイダ + assume_roleの設定が必要となり、単一アカウント構成より初期設計が複雑になる。</dd>
+        </dl>
       </div>
 
+      <!-- Decision card 3 -->
       <div class="bg-github-surface border border-github-border rounded-lg p-6">
-        <h3 class="font-semibold mb-2">3. サーバーレスAPI ― API Gateway + Lambda + SES</h3>
-        <p class="text-sm text-github-muted leading-relaxed">
-          お問い合わせフォームのバックエンドはAPI Gateway（HTTP API）+ Lambda（Python 3.12）+ SESで構成。
-          サーバーの常時稼働が不要なため、リクエスト発生時のみ課金される極めて低コストな運用を実現しています。
-        </p>
+        <h3 class="font-semibold mb-4">③ バックエンド ― API Gateway (HTTP API) + Lambda + SES</h3>
+        <dl class="grid gap-3 text-sm sm:grid-cols-[8rem_1fr]">
+          <dt class="text-github-blue-hover font-medium">課題・要件</dt>
+          <dd class="text-github-muted leading-relaxed">お問い合わせフォームの送信処理が必要だが、そのために常時稼働するサーバーは持ちたくない。</dd>
+          <dt class="text-github-blue-hover font-medium">選択した構成</dt>
+          <dd class="text-github-muted leading-relaxed">API Gateway (HTTP API) + Lambda (Python 3.12) + SES。<code class="text-github-text bg-github-bg px-1 rounded">POST /contact</code>をLambdaプロキシ統合で処理し、SESでメール送信。</dd>
+          <dt class="text-github-blue-hover font-medium">選択理由</dt>
+          <dd class="text-github-muted leading-relaxed">リクエスト発生時のみ課金されるサーバーレス構成が、低頻度のフォーム処理に最も適しているため。REST APIより安価なHTTP APIを採用。</dd>
+          <dt class="text-github-blue-hover font-medium">メリット</dt>
+          <dd class="text-github-muted leading-relaxed">アイドル時のコストがほぼゼロ。スケーリングやパッチ適用をマネージドサービスに委譲でき、運用負荷が低い。</dd>
+          <dt class="text-github-blue-hover font-medium">トレードオフ</dt>
+          <dd class="text-github-muted leading-relaxed">コールドスタートが発生しうる。低頻度・非同期に近いフォーム用途では許容できると判断。</dd>
+        </dl>
       </div>
 
+      <!-- Decision card 4 -->
       <div class="bg-github-surface border border-github-border rounded-lg p-6">
-        <h3 class="font-semibold mb-2">4. IaC ― Terraform（マルチプロバイダ・リモートステート）</h3>
-        <p class="text-sm text-github-muted leading-relaxed">
-          全リソース（S3・CloudFront・Route 53・ACM・API Gateway・Lambda・SES・IAM・ECR・DynamoDB・CloudWatch）をTerraformで定義。
-          ステートファイルはS3に保存し、DynamoDBによる排他ロックとPITRでステートを保護しています。
-        </p>
+        <h3 class="font-semibold mb-4">④ IaC ― Terraform（リモートステート + State Lock）</h3>
+        <dl class="grid gap-3 text-sm sm:grid-cols-[8rem_1fr]">
+          <dt class="text-github-blue-hover font-medium">課題・要件</dt>
+          <dd class="text-github-muted leading-relaxed">インフラ構成を再現可能にし、複数プロバイダ・複数アカウントをまたぐ構成を安全に管理したい。</dd>
+          <dt class="text-github-blue-hover font-medium">選択した構成</dt>
+          <dd class="text-github-muted leading-relaxed">Terraformで全リソースを定義。ステートはS3バケットに保存（バージョニング + SSE有効）し、State Lockで排他制御。ロック用DynamoDBテーブルはPITRを有効化。</dd>
+          <dt class="text-github-blue-hover font-medium">選択理由</dt>
+          <dd class="text-github-muted leading-relaxed">構成をコード化することで変更履歴とレビュー性を確保し、ステートの競合・破損リスクを排他ロックとバージョニングで低減するため。</dd>
+          <dt class="text-github-blue-hover font-medium">メリット</dt>
+          <dd class="text-github-muted leading-relaxed">環境の再現性・変更容易性が高まり、構成変更を差分ベースで安全に適用できる。</dd>
+          <dt class="text-github-blue-hover font-medium">トレードオフ</dt>
+          <dd class="text-github-muted leading-relaxed">ステート管理基盤（S3 / DynamoDB）自体の初期構築とライフサイクル保護（prevent_destroy）が必要になる。</dd>
+        </dl>
       </div>
 
+      <!-- Decision card 5 -->
       <div class="bg-github-surface border border-github-border rounded-lg p-6">
-        <h3 class="font-semibold mb-2">5. CI/CD ― GitHub Actions（OIDC認証）</h3>
-        <p class="text-sm text-github-muted leading-relaxed">
-          フロントエンドは<code class="text-github-text bg-github-bg px-1 rounded">frontend/</code>配下の変更をトリガーにS3同期とCloudFrontキャッシュ削除を自動実行。
-          バックエンドはGoのビルド・テスト後にDockerイメージをECRへプッシュ。
-          AWS認証はOIDCによるシークレットレス認証を採用しています。
-        </p>
+        <h3 class="font-semibold mb-4">⑤ CI/CD ― GitHub Actions + OIDC</h3>
+        <dl class="grid gap-3 text-sm sm:grid-cols-[8rem_1fr]">
+          <dt class="text-github-blue-hover font-medium">課題・要件</dt>
+          <dd class="text-github-muted leading-relaxed">デプロイを自動化したいが、長期有効なAWSアクセスキーをGitHubに保存したくない。</dd>
+          <dt class="text-github-blue-hover font-medium">選択した構成</dt>
+          <dd class="text-github-muted leading-relaxed">GitHub ActionsからOIDCでAWS IAMロールを<code class="text-github-text bg-github-bg px-1 rounded">AssumeRoleWithWebIdentity</code>。フロント／バックエンドで別ロールを用意し、<code class="text-github-text bg-github-bg px-1 rounded">sub</code>条件でリポジトリを限定。</dd>
+          <dt class="text-github-blue-hover font-medium">選択理由</dt>
+          <dd class="text-github-muted leading-relaxed">短命な一時認証情報を都度発行することで、シークレットの漏洩・失効管理のリスクを構造的に排除するため。</dd>
+          <dt class="text-github-blue-hover font-medium">メリット</dt>
+          <dd class="text-github-muted leading-relaxed">保存すべき長期シークレットが存在しない。ロールを分離することで用途ごとに最小権限を割り当てられる。</dd>
+          <dt class="text-github-blue-hover font-medium">トレードオフ</dt>
+          <dd class="text-github-muted leading-relaxed">OIDCプロバイダ・信頼ポリシー・条件（sub / aud）の初期設定が必要になる。</dd>
+        </dl>
       </div>
 
     </div>
@@ -171,9 +291,236 @@ flowchart TD
 
   <div class="border-t border-github-border"></div>
 
-  <!-- Tech Stack -->
-  <section class="max-w-5xl mx-auto px-6 py-16">
-    <h2 class="text-xl font-bold mb-6">使用技術スタック</h2>
+  <!-- 4. AWS Service Selection -->
+  <section id="selection" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-2">4. AWS Service Selection</h2>
+    <p class="text-sm text-github-muted mb-6 max-w-3xl leading-relaxed">
+      本構成では、以下の理由からサーバーレス・マネージドサービス中心の選択を採用しています。一般的な代替案との対比で、選択の意図を示します。
+    </p>
+    <div class="bg-github-surface border border-github-border rounded-lg overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-github-border">
+            <th class="text-left px-6 py-3 text-github-muted font-medium">一般的な代替案</th>
+            <th class="text-left px-6 py-3 text-github-muted font-medium">採用した構成</th>
+            <th class="text-left px-6 py-3 text-github-muted font-medium">この用途で採用した理由</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-github-border align-top">
+          <tr>
+            <td class="px-6 py-4 text-github-muted">S3 Static Website Hosting</td>
+            <td class="px-6 py-4">S3 + CloudFront + OAC</td>
+            <td class="px-6 py-4 text-github-muted leading-relaxed">S3を非公開のままTLS・エッジキャッシュ・独自ドメインを利用でき、セキュリティと配信性能を両立できるため。</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 text-github-muted">EC2 等の常時稼働サーバー</td>
+            <td class="px-6 py-4">Lambda（サーバーレス）</td>
+            <td class="px-6 py-4 text-github-muted leading-relaxed">低頻度のフォーム処理にはアイドルコストが発生しないサーバーレスが適し、パッチ・スケーリングを委譲できるため。</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 text-github-muted">API Gateway REST API</td>
+            <td class="px-6 py-4">API Gateway HTTP API</td>
+            <td class="px-6 py-4 text-github-muted leading-relaxed">今回必要な機能はシンプルなPOST処理であり、より低コスト・低レイテンシなHTTP APIで要件を満たせるため。</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 text-github-muted">GitHub Actions に長期アクセスキーを保存</td>
+            <td class="px-6 py-4">GitHub Actions OIDC</td>
+            <td class="px-6 py-4 text-github-muted leading-relaxed">長期シークレットを保持せず、短命な一時認証情報でデプロイできるため、漏洩・失効管理のリスクを構造的に排除できる。</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-4 text-github-muted">DNSを同一アカウントで管理</td>
+            <td class="px-6 py-4">Route 53 を別アカウント + assume_role</td>
+            <td class="px-6 py-4 text-github-muted leading-relaxed">共有度の高いDNSをアカウント境界で分離し、権限委譲で必要な操作のみを許可することで影響範囲を限定できるため。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- 5. Security Design -->
+  <section id="security" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-2">5. Security Design</h2>
+    <p class="text-sm text-github-muted mb-6 max-w-3xl leading-relaxed">
+      セキュリティは特定のレイヤーではなく、配信・認証・権限・通信の各所に組み込んで設計しています。以下はいずれも実際に実装している内容です。
+    </p>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">S3 Public Access Block</h3>
+        <p class="text-sm text-github-muted leading-relaxed">4項目（ACL / ポリシー両面）すべてを有効化し、バケットのパブリック公開を完全に遮断。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">CloudFront OAC</h3>
+        <p class="text-sm text-github-muted leading-relaxed">SigV4署名でCloudFrontからのみS3オリジンにアクセス。バケットポリシーは<code class="text-github-text bg-github-bg px-1 rounded">SourceArn</code>条件で該当ディストリビューションに限定。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">IAM（最小権限）</h3>
+        <p class="text-sm text-github-muted leading-relaxed">Lambda実行ロールはCloudWatch Logs + SESのみ。デプロイ用ロールはS3 / CloudFront / ECRの必要なアクションに限定。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">クロスアカウント assume_role</h3>
+        <p class="text-sm text-github-muted leading-relaxed">DNS管理アカウントへは専用ロールへの権限委譲でアクセスし、アカウント境界を維持。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">GitHub Actions OIDC</h3>
+        <p class="text-sm text-github-muted leading-relaxed">Web Identityフェデレーションで一時認証。信頼ポリシーの<code class="text-github-text bg-github-bg px-1 rounded">sub</code> / <code class="text-github-text bg-github-bg px-1 rounded">aud</code>条件で対象リポジトリを限定。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">シークレットレス構成</h3>
+        <p class="text-sm text-github-muted leading-relaxed">長期AWSアクセスキーをGitHub Actionsに保存しない。認証はロールARNの参照のみ。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">TLS（ACM）</h3>
+        <p class="text-sm text-github-muted leading-relaxed">ACM証明書でHTTPS化し、<code class="text-github-text bg-github-bg px-1 rounded">redirect-to-https</code> + 最小プロトコル<code class="text-github-text bg-github-bg px-1 rounded">TLSv1.2_2021</code>を設定。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">ステート保護</h3>
+        <p class="text-sm text-github-muted leading-relaxed">TerraformステートS3はバージョニング + SSE（AES256）。ロック用DynamoDBはPITRを有効化。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- 6. IaC / Terraform Design -->
+  <section id="iac" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-2">6. IaC / Terraform Design</h2>
+    <p class="text-sm text-github-muted mb-6 max-w-3xl leading-relaxed">
+      Terraformは単なる構築ツールではなく、「構成を再現可能・レビュー可能な状態に保つ」ための設計の中心に位置づけています。
+    </p>
+    <div class="flex flex-col gap-4">
+      <div class="bg-github-surface border border-github-border rounded-lg p-6">
+        <h3 class="font-semibold text-sm mb-2">なぜIaC化するのか</h3>
+        <p class="text-sm text-github-muted leading-relaxed">手動構築ではなくコードで宣言することで、構成の変更履歴・レビュー・再現性を確保し、同じ環境を差分ベースで安全に再構築できるようにするため。全AWSリソース（S3・CloudFront・Route 53・ACM・API Gateway・Lambda・SES・IAM・ECR・DynamoDB・CloudWatch・SNS）をTerraformで定義しています。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-6">
+        <h3 class="font-semibold text-sm mb-2">ステート管理と State Lock</h3>
+        <p class="text-sm text-github-muted leading-relaxed">ステートファイルはS3バケットに保存し、バージョニングとサーバーサイド暗号化（AES256）を有効化。State Lockにより<code class="text-github-text bg-github-bg px-1 rounded">apply</code>の競合を防止し、複数実行時のステート破損を回避します。ステート保存用バケットは<code class="text-github-text bg-github-bg px-1 rounded">prevent_destroy</code>で誤削除を防止しています。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-6">
+        <h3 class="font-semibold text-sm mb-2">クロスアカウント / マルチプロバイダ構成</h3>
+        <p class="text-sm text-github-muted leading-relaxed">3つのAWSプロバイダを定義：デフォルト（ap-northeast-1）、CloudFront/ACM用（us-east-1）、DNS管理アカウント用（<code class="text-github-text bg-github-bg px-1 rounded">assume_role</code>）。各リソースに<code class="text-github-text bg-github-bg px-1 rounded">provider</code>を明示指定することで、リージョン制約とアカウント分離を1つのコードベースで表現しています。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-6">
+        <h3 class="font-semibold text-sm mb-2">GitHub Actionsからのデプロイ</h3>
+        <p class="text-sm text-github-muted leading-relaxed">OIDCで発行された一時認証情報を用いてTerraform適用・デプロイを実行。長期シークレットを持たずにインフラ変更を自動化できます。</p>
+      </div>
+    </div>
+    <div class="mt-6">
+      <a href="https://github.com/makotonic999/aws-serverless-corporate-site" target="_blank" rel="noopener"
+        class="inline-flex items-center gap-2 px-5 py-2 bg-github-blue hover:bg-github-blue-hover text-white text-sm rounded-md transition-colors">
+        Terraformコードを見る（GitHub）
+      </a>
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- 7. CI/CD Design -->
+  <section id="cicd" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-2">7. CI/CD Design</h2>
+    <p class="text-sm text-github-muted mb-6 max-w-3xl leading-relaxed">
+      デプロイはGitHub Actionsで自動化し、AWSへの認証はOIDCによるシークレットレス方式を採用しています。認証フローは以下の通りです。
+    </p>
+
+    <div class="bg-github-surface border border-github-border rounded-lg p-6 mb-6">
+      <div class="mermaid">
+flowchart LR
+    GH["📦 GitHub\n(push / PR)"]
+    GHA["🔄 GitHub Actions"]
+    OIDC["🎫 OIDC\nWeb Identity Token"]
+    IAM["🔐 AWS IAM Role\n(sub条件で限定)"]
+    TF["🛠️ Terraform / Deploy"]
+    AWS["☁️ AWS リソース"]
+
+    GH --> GHA
+    GHA --> OIDC
+    OIDC --> IAM
+    IAM --> TF
+    TF --> AWS
+      </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">フロントエンドパイプライン</h3>
+        <p class="text-sm text-github-muted leading-relaxed"><code class="text-github-text bg-github-bg px-1 rounded">frontend/</code>配下の変更をトリガーに、S3同期とCloudFrontキャッシュ無効化（<code class="text-github-text bg-github-bg px-1 rounded">/*</code>）を自動実行。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">バックエンドパイプライン</h3>
+        <p class="text-sm text-github-muted leading-relaxed">Goのテスト・ビルド後、Dockerイメージを<code class="text-github-text bg-github-bg px-1 rounded">github.sha</code>と<code class="text-github-text bg-github-bg px-1 rounded">latest</code>タグでECRへプッシュ。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5 sm:col-span-2">
+        <h3 class="font-semibold text-sm mb-1">なぜ長期アクセスキーではなくOIDCか</h3>
+        <p class="text-sm text-github-muted leading-relaxed">長期アクセスキーは保存・ローテーション・失効管理の運用負担と漏洩リスクを伴います。OIDCではジョブ実行時に短命な一時認証情報を発行し、信頼ポリシーの<code class="text-github-text bg-github-bg px-1 rounded">sub</code>条件で対象リポジトリを限定するため、保持すべき長期シークレットそのものを排除できます。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- 8. Cost Design -->
+  <section id="cost" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-2">8. Cost Design</h2>
+    <div class="bg-github-surface border border-github-border rounded-lg p-6 max-w-3xl">
+      <p class="text-sm text-github-muted leading-relaxed mb-4">
+        <strong class="text-github-text">年間コスト約1,500円</strong>は、単なる「安さ」のアピールではなく、
+        <strong class="text-github-text">「個人開発という制約下で、必要な可用性・セキュリティ・運用性を維持しながらコストを抑える」</strong>という設計思想の結果です。
+      </p>
+      <p class="text-sm text-github-muted leading-relaxed">
+        常時稼働サーバーを持たずサーバーレス・マネージドサービスに寄せることで、アイドル時のコストをほぼゼロに抑えつつ、
+        TLS・非公開配信・監視・IaC・自動デプロイといった品質要素は妥協せずに維持しています。
+        コストは「削るもの」ではなく、アーキテクチャ選択の結果として最適化される対象と位置づけています。
+      </p>
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- 9. Operational Design -->
+  <section id="operations" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-2">9. Operational Design</h2>
+    <p class="text-sm text-github-muted mb-6 max-w-3xl leading-relaxed">
+      「構築して終わり」にしないため、運用負荷を下げる仕組みを設計に組み込んでいます。
+    </p>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">監視・通知（CloudWatch + SNS）</h3>
+        <p class="text-sm text-github-muted leading-relaxed">Lambdaエラー / API Gateway 5xxをCloudWatch Alarmで監視し、閾値超過時にSNS経由でメール通知。異常を能動的に検知します。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">マネージドサービスへの委譲</h3>
+        <p class="text-sm text-github-muted leading-relaxed">スケーリング・パッチ適用・可用性の維持をAWSマネージドサービスに委ねることで、日常的な運用作業を最小化。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">構成変更の安全性（Terraform）</h3>
+        <p class="text-sm text-github-muted leading-relaxed">変更は<code class="text-github-text bg-github-bg px-1 rounded">plan</code>による差分確認 → <code class="text-github-text bg-github-bg px-1 rounded">apply</code>で適用。State Lockとバージョニングで安全に構成を更新できます。</p>
+      </div>
+      <div class="bg-github-surface border border-github-border rounded-lg p-5">
+        <h3 class="font-semibold text-sm mb-1">デプロイの自動化（CI/CD）</h3>
+        <p class="text-sm text-github-muted leading-relaxed">変更対象（frontend / backend）ごとにパイプラインを分離し、手動オペレーションを排除。ヒューマンエラーの余地を減らします。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- 10. Architecture Summary -->
+  <section id="summary" class="max-w-5xl mx-auto px-6 py-16 scroll-mt-20">
+    <h2 class="text-xl font-bold mb-6">10. Architecture Summary</h2>
+    <div class="bg-github-surface border border-github-border rounded-lg p-6 mb-8">
+      <ul class="flex flex-col gap-3 text-sm text-github-muted">
+        <li class="flex gap-3"><span class="text-github-blue-hover font-bold">✓</span>サーバーレス・マネージドサービス中心の構成による、低運用負荷と低コストの両立</li>
+        <li class="flex gap-3"><span class="text-github-blue-hover font-bold">✓</span>S3非公開 + CloudFront OACによる、セキュアな静的配信</li>
+        <li class="flex gap-3"><span class="text-github-blue-hover font-bold">✓</span>Terraform（リモートステート + State Lock）による、再現可能で安全なインフラ管理</li>
+        <li class="flex gap-3"><span class="text-github-blue-hover font-bold">✓</span>GitHub Actions OIDCによる、長期シークレットを持たない安全なCI/CD</li>
+        <li class="flex gap-3"><span class="text-github-blue-hover font-bold">✓</span>クロスアカウント構成による、DNSとアプリリソースの分離</li>
+      </ul>
+    </div>
+
+    <!-- Tech Stack (維持) -->
+    <h3 class="text-lg font-bold mb-4">使用技術スタック</h3>
     <div class="bg-github-surface border border-github-border rounded-lg overflow-hidden">
       <table class="w-full text-sm">
         <thead>
