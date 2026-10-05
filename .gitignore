@@ -4,3 +4,10 @@
 *.tfstate
 *.tfstate.backup
 .terraform.lock.hcl
+
+# Terraform build artifacts
+*.zip
+
+# Python
+__pycache__/
+*.pyc

@@ -21,12 +21,26 @@ def lambda_handler(event, context):
         email = body.get('email', '未入力')
         message = body.get('message', '未入力')
 
+        # 送信元サイトの識別（未指定の場合は従来挙動を維持）
+        source = body.get('source')
+        SOURCE_LABELS = {
+            'profile': '社内ポートフォリオ',
+        }
+        source_label = SOURCE_LABELS.get(source)
+
         # 2. メールの件名と本文を構築
-        subject = f"【Webサイトお問い合わせ】{name} 様より"
+        # source_label がある場合のみ件名・本文に送信元を明記（後方互換）
+        if source_label:
+            subject = f"【{source_label}】{name} 様よりお問い合わせ"
+            source_line = f"■ 送信元サイト:\n{source_label}\n\n"
+        else:
+            subject = f"【Webサイトお問い合わせ】{name} 様より"
+            source_line = ""
+
         body_text = f"""
 Webサイトからお問い合わせがありました。
 
-■ お名前:
+{source_line}■ お名前:
 {name}
 
 ■ メールアドレス:
