@@ -1,10 +1,12 @@
-# AWS Serverless Portfolio Site
+# AWS Serverless 技術基盤 — スキル紹介サイト
 
-AWSのサーバーレスアーキテクチャを活用して構築した、インフラエンジニア（岡田誠）の個人ポートフォリオサイトです。
+AWSのサーバーレスアーキテクチャを活用して構築した、インフラエンジニア（岡田誠）のスキル紹介サイトです。
 
-インフラエンジニアとしての強みである **「高パフォーマンス」「極限のコスト最適化」「IaC（Infrastructure as Code）による環境管理」** を実証・アピールするためのポートフォリオ兼Web基盤テンプレートとして開発しています。
+インフラエンジニアとしての強みである **「高パフォーマンス」「極限のコスト最適化」「IaC（Infrastructure as Code）による環境管理」** を実証するための技術基盤兼Webテンプレートとして開発しています。
 
-🌐 **サイトURL**: [okada-chikuro-kougyousyo.com](https://okada-chikuro-kougyousyo.com)
+🌐 **サイトURL**: [profile.okada-chikuro-kougyousyo.com](https://profile.okada-chikuro-kougyousyo.com)
+
+> このブランチ（`profile`）は、スキル紹介向けに構成した版です。配信先は `profile.okada-chikuro-kougyousyo.com` サブドメインです。
 
 ---
 
@@ -41,7 +43,7 @@ flowchart TD
     APIGW["🚪 API Gateway\n(HTTP API)"]
     Lambda["⚡ Lambda\nPython 3.12"]
     SES["✉️ Amazon SES"]
-    Admin["👨💻 管理者"]
+    Admin["👨‍💻 管理者"]
     ECR[("🐳 Amazon ECR")]
     GHA["🔄 GitHub Actions\nOIDC認証"]
     CW["📊 CloudWatch\n+ SNS"]
@@ -70,19 +72,20 @@ portfolio/
 ├── .github/
 │   └── workflows/
 │       ├── backend-ci.yml        # バックエンドCI/CD（ECRへのDockerイメージプッシュ）
-│       └── deploy-frontend.yml   # フロントエンドデプロイ（S3同期 + CloudFrontキャッシュ削除）
+│       ├── deploy-frontend.yml   # 本体フロントデプロイ（main ブランチ）
+│       └── deploy-internal.yml   # スキル紹介サイトのデプロイ（profile ブランチ）
 ├── backend/
 │   ├── src/
 │   │   └── lambda_function.py    # Lambda関数（お問い合わせフォーム処理 / SESメール送信）
 │   ├── Dockerfile                # Goバックエンド用マルチステージビルド
 │   ├── go.mod
 │   └── main.go                   # GoバックエンドAPIサーバー
-├── frontend/
+├── frontend-internal/            # スキル紹介サイト（profile サブドメイン配信）
 │   ├── css/
 │   ├── images/
 │   ├── js/
 │   ├── webfonts/
-│   ├── index.html                # ポートフォリオメインページ（About / Skills / Works / Contact）
+│   ├── index.html                # メインページ（About / Skills / Works / Contact）
 │   └── architecture.html         # システム構成紹介ページ
 ├── terraform/
 │   └── environments/
@@ -92,6 +95,7 @@ portfolio/
 │           ├── cloudwatch.tf         # CloudWatch アラーム・SNS通知
 │           ├── iam_github_actions.tf # GitHub Actions OIDC用IAMロール（フロント・バック）
 │           ├── main.tf               # メインリソース（S3/CloudFront/Route53/ACM/Lambda/API GW/SES）
+│           ├── internal.tf           # スキル紹介サイト用リソース（profile サブドメイン）
 │           ├── outputs.tf
 │           ├── provider.tf           # マルチプロバイダ設定（東京/us-east-1/クロスアカウント）
 │           └── variables.tf
@@ -109,8 +113,8 @@ portfolio/
 | `aws_s3_bucket` | 静的サイトホスティング用 / Terraformステート保存用 |
 | `aws_cloudfront_distribution` | CDN配信・HTTPS強制 |
 | `aws_cloudfront_origin_access_control` | S3へのOACアクセス制御 |
-| `aws_acm_certificate` | SSL/TLS証明書（us-east-1で発行） |
-| `aws_route53_record` | ドメインのAレコード・ACM検証レコード |
+| `aws_acm_certificate` | SSL/TLS証明書（us-east-1で発行・ワイルドカード対応） |
+| `aws_route53_record` | ドメインのAレコード・ACM検証レコード・サブドメイン |
 | `aws_apigatewayv2_api` | HTTP API（CORS設定済み） |
 | `aws_lambda_function` | お問い合わせフォーム処理（Python 3.12） |
 | `aws_ses_email_identity` | SES送信元メールアドレス検証 |
@@ -142,13 +146,21 @@ provider "aws" { alias = "management"; assume_role { role_arn = "..." } }
 
 ## CI/CD パイプライン
 
-### フロントエンド（`deploy-frontend.yml`）
+### 本体フロントエンド（`deploy-frontend.yml` / `main` ブランチ）
 
-`frontend/` 配下の変更を `main` ブランチにプッシュすると自動実行。
+`main` ブランチの `frontend/` 配下の変更で自動実行。
 
 1. OIDC認証でAWSに接続（`AWS_FRONTEND_ROLE_ARN`）
 2. S3バケットへファイル同期（`aws s3 sync`）
 3. CloudFrontキャッシュ削除（`create-invalidation`）
+
+### スキル紹介サイト（`deploy-internal.yml` / `profile` ブランチ）
+
+`profile` ブランチの `frontend-internal/` 配下の変更で自動実行。
+
+1. OIDC認証でAWSに接続（`AWS_FRONTEND_ROLE_ARN`）
+2. スキル紹介サイト用S3バケットへ同期（`S3_BUCKET_NAME_INTERNAL`）
+3. CloudFrontキャッシュ削除（`CLOUDFRONT_DISTRIBUTION_ID_INTERNAL`）
 
 ### バックエンド（`backend-ci.yml`）
 
@@ -158,7 +170,7 @@ provider "aws" { alias = "management"; assume_role { role_arn = "..." } }
 2. OIDC認証でAWSに接続（`AWS_BACKEND_ROLE_ARN`）
 3. DockerイメージをビルドしてECRへプッシュ
 
-> 両ワークフローともOIDC認証（シークレットレス）を採用。
+> 全ワークフローともOIDC認証（シークレットレス）を採用。
 
 ---
 
@@ -186,9 +198,9 @@ terraform init -migrate-state
 terraform apply
 ```
 
-### フロントエンドの手動デプロイ
+### スキル紹介サイトの手動デプロイ
 
 ```bash
-aws s3 sync frontend/ s3://<バケット名> --profile dev
+aws s3 sync frontend-internal/ s3://<バケット名> --profile dev --delete
 aws cloudfront create-invalidation --distribution-id <ディストリビューションID> --paths "/*" --profile dev
 ```

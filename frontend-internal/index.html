@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Okada Makoto | Infrastructure Engineer</title>
+
+  <!-- 社内（客先提示）用：検索エンジンにインデックスさせない -->
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- SEO -->
+  <meta name="description" content="岡田誠のスキル紹介。AWS・IaC・サーバーレス・CI/CDを得意とするインフラエンジニア。S3+CloudFront+Terraform+GitHub Actionsによる低コスト・高セキュリティなサーバーレス構成を実践。" />
+  <link rel="canonical" href="https://profile.okada-chikuro-kougyousyo.com/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Okada Makoto | Infrastructure Engineer" />
+  <meta property="og:description" content="AWS・IaC・サーバーレス・CI/CDを得意とするインフラエンジニアのスキル紹介。" />
+  <meta property="og:url" content="https://profile.okada-chikuro-kougyousyo.com/" />
+  <meta property="og:site_name" content="Okada Makoto Profile" />
+  <meta property="og:locale" content="ja_JP" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Okada Makoto | Infrastructure Engineer" />
+  <meta name="twitter:description" content="AWS・IaC・サーバーレス・CI/CDを得意とするインフラエンジニアのスキル紹介。" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            github: {
+              bg: '#0d1117',
+              surface: '#161b22',
+              border: '#30363d',
+              text: '#e6edf3',
+              muted: '#8b949e',
+              blue: '#1f6feb',
+              'blue-hover': '#388bfd',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Noto Sans JP', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body class="bg-github-bg text-github-text font-sans">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-github-surface border-b border-github-border">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="font-bold text-lg text-github-text hover:text-github-blue-hover transition-colors">Okada Makoto</a>
+      <nav class="flex gap-6 text-sm text-github-muted">
+        <a href="#about" class="hover:text-github-text transition-colors">About</a>
+        <a href="#story" class="hover:text-github-text transition-colors">Story</a>
+        <a href="#skills" class="hover:text-github-text transition-colors">Skills</a>
+        <a href="#works" class="hover:text-github-text transition-colors">Works</a>
+        <a href="architecture.html" class="hover:text-github-text transition-colors">Architecture</a>
+        <a href="https://dive.okada-chikuro-kougyousyo.com" target="_blank" rel="noopener" class="hover:text-github-text transition-colors">DIVE</a>
+        <a href="#contact" class="hover:text-github-text transition-colors">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section id="about" class="max-w-5xl mx-auto px-6 py-24">
+    <div class="flex flex-col gap-4">
+      <p class="text-github-muted text-sm">Hi, I'm</p>
+      <h1 class="text-5xl font-bold text-github-text">Okada Makoto</h1>
+      <p class="text-xl text-github-muted">Infrastructure Engineer</p>
+      <p class="text-github-muted max-w-xl leading-relaxed">
+        AWSを中心としたクラウドインフラの設計・構築・運用が得意なインフラエンジニアです。
+        IaC・サーバーレス・CI/CDを活用し、高パフォーマンスかつコスト最適化されたシステムを構築します。
+      </p>
+      <div class="flex flex-wrap gap-2 mt-2">
+        <span class="px-3 py-1 text-xs rounded-full bg-github-surface border border-github-border text-github-muted">AWS SAA</span>
+        <span class="px-3 py-1 text-xs rounded-full bg-github-surface border border-github-border text-github-muted">AWS SOA</span>
+        <span class="px-3 py-1 text-xs rounded-full bg-github-surface border border-github-border text-github-muted">AWS DVA</span>
+        <span class="px-3 py-1 text-xs rounded-full bg-github-surface border border-github-border text-github-muted">AWS SAP</span>
+        <span class="px-3 py-1 text-xs rounded-full bg-github-surface border border-github-border text-github-muted">基本情報技術者</span>
+        <span class="px-3 py-1 text-xs rounded-full bg-github-surface border border-github-border text-github-muted">CCNA</span>
+        <span class="px-3 py-1 text-xs rounded-full bg-github-surface border border-github-border text-github-muted">Python 3 基礎</span>
+      </div>
+      <div class="flex gap-4 mt-4">
+        <a href="#contact" class="px-5 py-2 bg-github-blue hover:bg-github-blue-hover text-white text-sm rounded-md transition-colors">Contact</a>
+        <a href="https://github.com/makotonic999" target="_blank" rel="noopener" class="px-5 py-2 bg-github-surface hover:bg-github-border text-github-text text-sm rounded-md border border-github-border transition-colors">GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- About Me / Story -->
+  <section id="story" class="max-w-5xl mx-auto px-6 py-20">
+    <h2 class="text-2xl font-bold mb-2">About Me</h2>
+    <p class="text-github-muted text-sm mb-8">これまでと、これから</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- 左: ストーリー本文 -->
+      <div class="lg:col-span-2 flex flex-col gap-4 text-github-muted leading-relaxed">
+        <p class="text-lg text-github-text font-medium">
+          「動く仕組みを、表面のコマンドではなく仕組みそのものから理解したい。」
+        </p>
+        <p>
+          もともとは飲食業で新店の立ち上げと黒字化までをやり切った経験があります。
+          その後、より大きな価値を生み長く通用する技術を身につけたいという思いから、IT業界で技術を追求する道に進みました。
+        </p>
+        <p>
+          ネットワークの運用保守から入り、AWSの運用・自動化へ。手を動かすほどに、
+          クラウドやコンピュータの<strong class="text-github-text">低レイヤの仕組みそのもの</strong>への興味が深まっていきました。
+          <strong class="text-github-text">「常に学び続け、より深く理解する」という軸を一貫して大切にしています。</strong>
+        </p>
+        <p>
+          その姿勢を最も体現しているのが、個人開発の技術メディア
+          <a href="https://dive.okada-chikuro-kougyousyo.com" target="_blank" rel="noopener" class="text-github-blue hover:text-github-blue-hover">DIVE</a>
+          です。トランジスタからTransformerまで、技術を「歴史の必然」と「物理的な仕組み」から解体することをテーマに、
+          コンテンツ制作からインフラ構築・CI/CDまでを一人で実装・公開しています。
+          日々の運用改善と並行して、CSの基礎を低レイヤから学び直し続けています。
+        </p>
+      </div>
+
+      <!-- 右: 目指す方向 -->
+      <div class="flex flex-col gap-4">
+        <div class="bg-github-surface border border-github-border rounded-lg p-5">
+          <h3 class="font-semibold mb-3 text-github-text">強みとする領域</h3>
+          <ul class="flex flex-col gap-2 text-sm text-github-muted">
+            <li>▹ クラウドの設計から運用改善までの一貫した対応</li>
+            <li>▹ 低レイヤからアプリまでを理解するフルスタックな技術力</li>
+            <li>▹ モダンな技術で、安定と効率を両立する仕組みづくり</li>
+          </ul>
+        </div>
+        <div class="bg-github-surface border border-github-border rounded-lg p-5">
+          <h3 class="font-semibold mb-3 text-github-text">大切にしていること</h3>
+          <ul class="flex flex-col gap-2 text-sm text-github-muted">
+            <li>▹ 「おまじない」で済ませず、仕組みから理解する</li>
+            <li>▹ 手動のトイルは、コードで消す</li>
+            <li>▹ 現場で培った、やり切る力とチーム連携</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- Skills -->
+  <section id="skills" class="max-w-5xl mx-auto px-6 py-20">
+    <h2 class="text-2xl font-bold mb-8">Skills</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-5 hover:border-github-blue transition-colors">
+        <h3 class="font-semibold mb-2">AWS ― サーバーレス</h3>
+        <p class="text-sm text-github-muted">Lambda / API Gateway / S3 / CloudFront / SES / DynamoDB / CloudWatch / SNS</p>
+      </div>
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-5 hover:border-github-blue transition-colors">
+        <h3 class="font-semibold mb-2">AWS ― コンピュート・コンテナ</h3>
+        <p class="text-sm text-github-muted">EC2 / ECS Fargate / ECR / SSM</p>
+      </div>
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-5 hover:border-github-blue transition-colors">
+        <h3 class="font-semibold mb-2">AWS ― ネットワーク・セキュリティ</h3>
+        <p class="text-sm text-github-muted">VPC / Route 53 / ACM / ALB / WAF / IAM / Organizations</p>
+      </div>
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-5 hover:border-github-blue transition-colors">
+        <h3 class="font-semibold mb-2">IaC / Terraform</h3>
+        <p class="text-sm text-github-muted">マルチプロバイダ・クロスアカウント構成。S3リモートステート・DynamoDBロックによるチーム開発対応。</p>
+      </div>
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-5 hover:border-github-blue transition-colors">
+        <h3 class="font-semibold mb-2">CI/CD</h3>
+        <p class="text-sm text-github-muted">GitHub Actions による自動デプロイ。OIDC認証でシークレットレスなAWS認証を実現。</p>
+      </div>
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-5 hover:border-github-blue transition-colors">
+        <h3 class="font-semibold mb-2">Python / Go</h3>
+        <p class="text-sm text-github-muted">Python 3 基礎資格取得。Lambda実装・自動化スクリプトに活用。GoはAPIサーバー構築・学習中。</p>
+      </div>
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-5 hover:border-github-blue transition-colors">
+        <h3 class="font-semibold mb-2">Docker / Container</h3>
+        <p class="text-sm text-github-muted">マルチステージビルドによる軽量イメージ生成。ECS FargateおよびECRへのCI/CDパイプラインを構築。</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- Works -->
+  <section id="works" class="max-w-5xl mx-auto px-6 py-20">
+    <h2 class="text-2xl font-bold mb-8">Works</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-6 flex flex-col gap-3 hover:border-github-blue transition-colors">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">portfolio</h3>
+          <span class="text-xs text-github-muted border border-github-border rounded-full px-2 py-0.5">Public</span>
+        </div>
+        <p class="text-sm text-github-muted">本サイト。S3 + CloudFront + Lambda + API Gateway + SES + Terraform + GitHub Actions によるサーバーレス構成。年間約1,500円で運用。</p>
+        <div class="flex flex-wrap gap-2 mt-auto">
+          <span class="text-xs text-github-muted">Terraform</span>
+          <span class="text-xs text-github-muted">Python</span>
+          <span class="text-xs text-github-muted">Go</span>
+          <span class="text-xs text-github-muted">AWS</span>
+        </div>
+        <div class="flex gap-3 mt-2">
+          <a href="architecture.html" class="text-sm text-github-blue hover:text-github-blue-hover transition-colors">構成を見る →</a>
+          <a href="https://github.com/makotonic999/portfolio" target="_blank" rel="noopener" class="text-sm text-github-muted hover:text-github-text transition-colors">GitHub →</a>
+        </div>
+      </div>
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-6 flex flex-col gap-3 hover:border-github-blue transition-colors">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">aws-standard-3tier-architecture</h3>
+          <span class="text-xs text-github-muted border border-github-border rounded-full px-2 py-0.5">Public</span>
+        </div>
+        <p class="text-sm text-github-muted">VPC・ALB・ECS Fargate・RDS MySQL・Secrets Manager・CloudWatch を Terraform モジュール構成で構築した3層アーキテクチャ。マルチAZ・VPC Endpoint・OIDC CI/CD まで含む本番構成。</p>
+        <div class="flex flex-wrap gap-2 mt-auto">
+          <span class="text-xs text-github-muted">Terraform</span>
+          <span class="text-xs text-github-muted">Python</span>
+          <span class="text-xs text-github-muted">Docker</span>
+          <span class="text-xs text-github-muted">ECS</span>
+          <span class="text-xs text-github-muted">RDS</span>
+          <span class="text-xs text-github-muted">AWS</span>
+        </div>
+        <div class="flex gap-3 mt-2">
+          <a href="https://github.com/makotonic999/aws-standard-3tier-architecture" target="_blank" rel="noopener" class="text-sm text-github-muted hover:text-github-text transition-colors">GitHub →</a>
+        </div>
+      </div>
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-6 flex flex-col gap-3 hover:border-github-blue transition-colors">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">DIVE — 技術全史</h3>
+          <span class="text-xs text-github-muted border border-github-border rounded-full px-2 py-0.5">Public</span>
+        </div>
+        <p class="text-sm text-github-muted">0と1の物理からAIまでを繋ぐフルスタック技術全史。Astro + MDX で構築し、S3 + CloudFront + Terraform（マルチアカウント/クロスアカウント構成）でサーバーレス配信。OIDC認証の GitHub Actions で CI/CD 自動化。</p>
+        <div class="flex flex-wrap gap-2 mt-auto">
+          <span class="text-xs text-github-muted">Astro</span>
+          <span class="text-xs text-github-muted">Terraform</span>
+          <span class="text-xs text-github-muted">CloudFront</span>
+          <span class="text-xs text-github-muted">GitHub Actions</span>
+          <span class="text-xs text-github-muted">AWS</span>
+        </div>
+        <div class="flex gap-3 mt-2">
+          <a href="https://dive.okada-chikuro-kougyousyo.com" target="_blank" rel="noopener" class="text-sm text-github-blue hover:text-github-blue-hover transition-colors">サイトを見る →</a>
+          <a href="https://github.com/makotonic999/DIVE" target="_blank" rel="noopener" class="text-sm text-github-muted hover:text-github-text transition-colors">GitHub →</a>
+        </div>
+      </div>
+
+      <div class="bg-github-surface border border-github-border rounded-lg p-6 flex flex-col gap-3 hover:border-github-blue transition-colors">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">my-kanban-app</h3>
+          <span class="text-xs text-github-muted border border-github-border rounded-full px-2 py-0.5">Public</span>
+        </div>
+        <p class="text-sm text-github-muted">Go + PostgreSQL によるカンバン型タスク管理アプリ。JWT 認証・認可、OpenTelemetry トレーシング、Prometheus/Grafana による SLO 監視、React フロントエンドまでを実装。ECS Fargate + RDS + ALB を Terraform で構成し、OIDC 認証の GitHub Actions で CI/CD 自動化。</p>
+        <div class="flex flex-wrap gap-2 mt-auto">
+          <span class="text-xs text-github-muted">Go</span>
+          <span class="text-xs text-github-muted">PostgreSQL</span>
+          <span class="text-xs text-github-muted">React</span>
+          <span class="text-xs text-github-muted">Terraform</span>
+          <span class="text-xs text-github-muted">ECS</span>
+          <span class="text-xs text-github-muted">GitHub Actions</span>
+          <span class="text-xs text-github-muted">AWS</span>
+        </div>
+        <div class="flex gap-3 mt-2">
+          <a href="https://github.com/makotonic999/my-kanban-app" target="_blank" rel="noopener" class="text-sm text-github-muted hover:text-github-text transition-colors">GitHub →</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="border-t border-github-border"></div>
+
+  <!-- Contact -->
+  <section id="contact" class="max-w-5xl mx-auto px-6 py-20">
+    <h2 class="text-2xl font-bold mb-2">Contact</h2>
+    <p class="text-github-muted mb-8 text-sm">技術的なご相談・お問い合わせなど、お気軽にご連絡ください。</p>
+
+    <form id="contact-form" class="flex flex-col gap-4 max-w-lg">
+      <div class="flex flex-col gap-1">
+        <label for="name" class="text-sm text-github-muted">お名前 <span class="text-red-400">*</span></label>
+        <input type="text" id="name" name="name" required placeholder="例：山田 太郎"
+          class="bg-github-surface border border-github-border rounded-md px-3 py-2 text-sm text-github-text placeholder-github-muted focus:outline-none focus:border-github-blue transition-colors" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label for="email" class="text-sm text-github-muted">メールアドレス <span class="text-red-400">*</span></label>
+        <input type="email" id="email" name="email" required placeholder="例：example@domain.com"
+          class="bg-github-surface border border-github-border rounded-md px-3 py-2 text-sm text-github-text placeholder-github-muted focus:outline-none focus:border-github-blue transition-colors" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label for="message" class="text-sm text-github-muted">お問い合わせ内容 <span class="text-red-400">*</span></label>
+        <textarea id="message" name="message" rows="5" required placeholder="ご相談内容をご記入ください"
+          class="bg-github-surface border border-github-border rounded-md px-3 py-2 text-sm text-github-text placeholder-github-muted focus:outline-none focus:border-github-blue transition-colors resize-none"></textarea>
+      </div>
+      <button type="submit" id="submit-btn"
+        class="px-5 py-2 bg-github-blue hover:bg-github-blue-hover text-white text-sm rounded-md transition-colors w-fit disabled:opacity-50">
+        送信する
+      </button>
+      <div id="form-response" class="hidden text-sm rounded-md px-4 py-3"></div>
+    </form>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-github-border">
+    <div class="max-w-5xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-github-muted">
+      <span>&copy; Okada Makoto. All rights reserved.</span>
+      <a href="https://github.com/makotonic999" target="_blank" rel="noopener" class="hover:text-github-text transition-colors">github.com/makotonic999</a>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('contact-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submit-btn');
+      const responseDiv = document.getElementById('form-response');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '送信中...';
+      responseDiv.classList.add('hidden');
+
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        message: document.getElementById('message').value,
+        source: 'profile'
+      };
+
+      try {
+        const res = await fetch('https://6p2eeyyhu3.execute-api.ap-northeast-1.amazonaws.com/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        if (!res.ok) throw new Error('API Error');
+        responseDiv.className = 'text-sm rounded-md px-4 py-3 bg-green-900 border border-green-700 text-green-300';
+        responseDiv.textContent = 'お問い合わせを送信しました。ご返信まで今しばらくお待ちください。';
+        this.reset();
+      } catch {
+        responseDiv.className = 'text-sm rounded-md px-4 py-3 bg-red-900 border border-red-700 text-red-300';
+        responseDiv.textContent = '送信に失敗しました。時間をおいて再度お試しください。';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '送信する';
+        responseDiv.classList.remove('hidden');
+      }
+    });
+  </script>
+
+</body>
+</html>

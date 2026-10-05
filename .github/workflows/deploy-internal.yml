@@ -1,0 +1,43 @@
+name: Deploy Internal Site to S3 and CloudFront
+
+on:
+  push:
+    branches:
+      - profile
+    paths:
+      - 'frontend-internal/**'
+      - '.github/workflows/deploy-internal.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-internal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_FRONTEND_ROLE_ARN }}
+          aws-region: ap-northeast-1
+
+      # S3への同期（frontend-internal/ フォルダの中身を社内用バケットへ同期）
+      - name: Deploy internal site to S3
+        env:
+          S3_BUCKET_INTERNAL: ${{ secrets.S3_BUCKET_NAME_INTERNAL }}
+        run: |
+          aws s3 sync frontend-internal/ s3://$S3_BUCKET_INTERNAL --delete
+
+      # CloudFrontのキャッシュ削除（インバリデーション）
+      - name: Invalidate internal CloudFront Cache
+        env:
+          CLOUDFRONT_DISTRIBUTION_ID_INTERNAL: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_INTERNAL }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID_INTERNAL \
+            --paths "/*"
