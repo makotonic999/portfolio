@@ -110,7 +110,9 @@ resource "aws_iam_role_policy" "deploy_policy" {
         ]
         Resource = [
           "arn:aws:s3:::okada-chikuro-site-hmd17889",
-          "arn:aws:s3:::okada-chikuro-site-hmd17889/*"
+          "arn:aws:s3:::okada-chikuro-site-hmd17889/*",
+          aws_s3_bucket.site_internal.arn,
+          "${aws_s3_bucket.site_internal.arn}/*"
         ]
       },
       {
