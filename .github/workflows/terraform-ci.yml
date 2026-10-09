@@ -89,7 +89,7 @@ jobs:
       # Trivy の IaC スキャンで Terraform のセキュリティ設定ミスを検出する。
       # （tfsec は Trivy に統合済みのため Trivy を利用）
       - name: Run Trivy IaC scan (gate)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: config
           scan-ref: terraform
