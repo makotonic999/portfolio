@@ -1,0 +1,97 @@
+name: Terraform CI
+
+# Terraform コードの「フォーマット統一 / 構文妥当性 / ベストプラクティス /
+# セキュリティ」を PR 時に自動チェックするためのワークフロー。
+#
+# 【導入方針】段階的導入
+#   フェーズ1（現在）: 検出するが CI は失敗させない（soft-fail / 可視化モード）。
+#                      まず既存コードの指摘を棚卸しし、是々非々で対処する。
+#   フェーズ2（将来）: 棚卸し後、tflint / tfsec を厳格化（gate）して回帰を防ぐ。
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TF_WORKING_DIR: terraform/environments/dev
+
+jobs:
+  validate:
+    name: fmt & validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      # フォーマットチェック（差分があれば指摘。-check で書き換えはしない）
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive -diff
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      # backend(S3) に接続せずに構文・参照の妥当性のみ検証する。
+      # クラウド認証情報が不要になるよう -backend=false で init する。
+      - name: Terraform init (no backend)
+        run: terraform init -backend=false
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform validate
+        run: terraform validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+  tflint:
+    name: tflint (lint / best practices)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # フェーズ1: 検出のみ（CIは落とさない）。--minimum-failure-severity=error でも
+      # 失敗させないよう、終了コードを無視して可視化に徹する。
+      - name: Run TFLint (soft-fail / visualize)
+        run: tflint --recursive --format compact || true
+        working-directory: terraform
+
+  tfsec:
+    name: tfsec (security scan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Trivy の IaC スキャンで Terraform のセキュリティ設定ミスを検出する。
+      # （tfsec は Trivy に統合済みのため Trivy を利用）
+      - name: Run Trivy IaC scan (soft-fail / visualize)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: terraform
+          # フェーズ1: 検出するが CI は失敗させない（可視化のみ）
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          format: table
