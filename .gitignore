@@ -5,6 +5,10 @@
 *.tfstate.backup
 .terraform.lock.hcl
 
+# 機密値を含む変数ファイルはコミットしない（example は共有する）
+*.tfvars
+!*.tfvars.example
+
 # Terraform build artifacts
 *.zip
 

@@ -11,7 +11,7 @@ resource "aws_sns_topic" "alerts" {
 resource "aws_sns_topic_subscription" "email" {
   topic_arn = aws_sns_topic.alerts.arn
   protocol  = "email"
-  endpoint  = "makotonic999@gmail.com"
+  endpoint  = var.contact_email
 }
 
 # ==================================================

@@ -18,7 +18,7 @@ provider "aws" {
 
   # 管理アカウント側のホストゾーンを操作するための権限委譲設定
   assume_role {
-    role_arn     = "arn:aws:iam::761018859875:role/TerraformRoute53CrossAccountRole"
+    role_arn     = "arn:aws:iam::${var.dns_account_id}:role/TerraformRoute53CrossAccountRole"
     session_name = "TerraformRoute53ManagementSession"
   }
 }
