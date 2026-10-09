@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/oidc-test
     paths:
       - 'backend/**'
   pull_request:

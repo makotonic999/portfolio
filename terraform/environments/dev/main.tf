@@ -175,7 +175,7 @@ resource "aws_route53_record" "www" {
 # 10. SES (送信元・送信先メールアドレスの検証)
 # ==================================================
 resource "aws_ses_email_identity" "contact_email" {
-  email = "makotonic999@gmail.com"
+  email = var.contact_email
 }
 
 # ==================================================
@@ -204,10 +204,10 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# SES メール送信権限
+# SES メール送信権限（最小権限: 検証済みアイデンティティと送信元アドレスを限定）
 resource "aws_iam_policy" "lambda_ses_policy" {
   name        = "contact_form_ses_policy"
-  description = "Allow Lambda to send email via SES"
+  description = "Allow Lambda to send email via SES (scoped to the verified identity)"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -215,7 +215,12 @@ resource "aws_iam_policy" "lambda_ses_policy" {
       {
         Effect   = "Allow"
         Action   = ["ses:SendEmail", "ses:SendRawEmail"]
-        Resource = "*"
+        Resource = aws_ses_email_identity.contact_email.arn
+        Condition = {
+          StringEquals = {
+            "ses:FromAddress" = var.contact_email
+          }
+        }
       }
     ]
   })
@@ -249,8 +254,9 @@ resource "aws_lambda_function" "contact_form" {
 
   environment {
     variables = {
-      SENDER_EMAIL    = "makotonic999@gmail.com"
-      RECIPIENT_EMAIL = "makotonic999@gmail.com"
+      SENDER_EMAIL    = var.contact_email
+      RECIPIENT_EMAIL = var.contact_email
+      ALLOWED_ORIGINS = join(",", var.allowed_origins)
     }
   }
 }
@@ -265,7 +271,8 @@ resource "aws_apigatewayv2_api" "http_api" {
   cors_configuration {
     allow_headers = ["content-type"]
     allow_methods = ["POST", "OPTIONS"]
-    allow_origins = ["*"]
+    allow_origins = var.allowed_origins
+    max_age       = 3600
   }
 }
 

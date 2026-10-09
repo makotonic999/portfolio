@@ -24,11 +24,16 @@ resource "aws_iam_role" "github_actions_backend_deploy" {
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
-          StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:makotonic999*portfolio*:*"
-          }
+          # OIDC の sub はリポジトリ＋ブランチ(ref)まで厳格に限定する。
+          # 広いワイルドカード（repo:owner*repo*:*）は他リポジトリやPRから
+          # ロールを引き受けられる余地を残すため避ける。
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = [
+              for ref in var.github_deploy_refs : "repo:${var.github_repository}:ref:${ref}"
+            ]
           }
         }
       }
@@ -81,11 +86,14 @@ resource "aws_iam_role" "github_actions_deploy" {
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
-          StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:makotonic999*portfolio*:*"
-          }
+          # sub はリポジトリ＋ブランチ(ref)まで限定（最小権限）
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = [
+              for ref in var.github_deploy_refs : "repo:${var.github_repository}:ref:${ref}"
+            ]
           }
         }
       }
@@ -109,8 +117,8 @@ resource "aws_iam_role_policy" "deploy_policy" {
           "s3:DeleteObject"
         ]
         Resource = [
-          "arn:aws:s3:::okada-chikuro-site-hmd17889",
-          "arn:aws:s3:::okada-chikuro-site-hmd17889/*"
+          aws_s3_bucket.site.arn,
+          "${aws_s3_bucket.site.arn}/*"
         ]
       },
       {
@@ -118,7 +126,7 @@ resource "aws_iam_role_policy" "deploy_policy" {
         Action = [
           "cloudfront:CreateInvalidation"
         ]
-        Resource = "*"
+        Resource = aws_cloudfront_distribution.site.arn
       }
     ]
   })
