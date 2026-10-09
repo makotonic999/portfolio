@@ -3,6 +3,9 @@
 # ==================================================
 resource "aws_sns_topic" "alerts" {
   name = "cloudwatch-alerts-dev"
+
+  # 保管時の暗号化（AWS マネージドキー）。トピックに流れる通知内容を保護する。
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "email" {
@@ -15,9 +18,9 @@ resource "aws_sns_topic_subscription" "email" {
 # Lambda エラーアラーム
 # ==================================================
 resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
-  alarm_name          = "lambda-contact-form-errors"
-  namespace           = "AWS/Lambda"
-  metric_name         = "Errors"
+  alarm_name  = "lambda-contact-form-errors"
+  namespace   = "AWS/Lambda"
+  metric_name = "Errors"
   dimensions = {
     FunctionName = aws_lambda_function.contact_form.function_name
   }
@@ -35,9 +38,9 @@ resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
 # API Gateway 5xx エラーアラーム
 # ==================================================
 resource "aws_cloudwatch_metric_alarm" "apigw_5xx" {
-  alarm_name          = "apigw-contact-form-5xx"
-  namespace           = "AWS/ApiGateway"
-  metric_name         = "5XXError"
+  alarm_name  = "apigw-contact-form-5xx"
+  namespace   = "AWS/ApiGateway"
+  metric_name = "5XXError"
   dimensions = {
     ApiId = aws_apigatewayv2_api.http_api.id
   }
