@@ -1,0 +1,27 @@
+# Trivy 無視リスト（フェーズ2・gate 化に伴う「正当な例外」の管理ファイル）
+#
+# ここに列挙する指摘は「棚卸しの結果、意図的に許容する」もの。
+# 各エントリは必ず理由を併記し、レビュー可能な状態を保つ。
+# 書式: 1 行 1 ルール ID（# 以降はコメント）。ID は AVD-<PROVIDER>-<NNNN> 形式。
+
+# --- CMK（顧客管理キー）未使用。SSE-S3 / AWS マネージドキーで暗号化は満たしている ---
+# dev / 個人ポートフォリオ用途では KMS CMK の鍵管理コスト・運用（ローテーション／
+# キーポリシー保守）が過剰。保管時暗号化自体は SSE-S3(AES256) で担保済みのため許容する。
+# 対象:
+#   - aws_s3_bucket.site        （公開 Web コンテンツ用。SSE-S3）
+#   - aws_s3_bucket.cf_logs      （CloudFront アクセスログ用。SSE-S3）
+#   - aws_s3_bucket.tf_state     （tfstate 用。SSE-S3）
+AVD-AWS-0132
+
+# SNS トピックの暗号化。alias/aws/sns（AWS マネージドキー）で暗号化済みだが、
+# 本ルールは CMK を要求する。上記 S3 と同じ理由で CMK は過剰のため許容する。
+# 対象: aws_sns_topic.alerts
+AVD-AWS-0136
+
+# CloudFront への WAF 未適用。
+# WAF (WAFv2) は Web ACL 固定費 + ルール/リクエスト課金が発生し、
+# dev / 個人ポートフォリオのトラフィック規模では費用対効果が見合わない。
+# 攻撃面は静的サイト（S3+OAC, GET/HEAD のみ, HTTPS 強制）に限定されており、
+# リスクを受容する。本番相当の要件が出た段階で再検討する。
+# 対象: aws_cloudfront_distribution.site
+AVD-AWS-0011

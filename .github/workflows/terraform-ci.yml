@@ -1,0 +1,102 @@
+name: Terraform CI
+
+# Terraform コードの「フォーマット統一 / 構文妥当性 / ベストプラクティス /
+# セキュリティ」を PR 時に自動チェックするためのワークフロー。
+#
+# 【導入方針】段階的導入
+#   フェーズ1（完了）: 検出するが CI は失敗させない（soft-fail / 可視化モード）。
+#                      既存コードの指摘を棚卸しし、是々非々で対処した。
+#   フェーズ2（現在）: 棚卸し後、tflint / Trivy を gate 化して回帰を防ぐ。
+#                      - tflint: 指摘があれば CI を失敗させる（|| true を撤去）。
+#                      - Trivy : exit-code=1 で失敗させる。許容する指摘は
+#                                terraform/.trivyignore に理由付きで管理する。
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TF_WORKING_DIR: terraform/environments/dev
+
+jobs:
+  validate:
+    name: fmt & validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      # フォーマットチェック（差分があれば指摘。-check で書き換えはしない）
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive -diff
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      # backend(S3) に接続せずに構文・参照の妥当性のみ検証する。
+      # クラウド認証情報が不要になるよう -backend=false で init する。
+      - name: Terraform init (no backend)
+        run: terraform init -backend=false
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform validate
+        run: terraform validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+  tflint:
+    name: tflint (lint / best practices)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Init TFLint
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # フェーズ2: gate 化。指摘があれば CI を失敗させる（終了コードをそのまま伝播）。
+      - name: Run TFLint (gate)
+        run: tflint --recursive --format compact
+        working-directory: terraform
+
+  trivy:
+    name: trivy (security scan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Trivy の IaC スキャンで Terraform のセキュリティ設定ミスを検出する。
+      # （tfsec は Trivy に統合済みのため Trivy を利用）
+      - name: Run Trivy IaC scan (gate)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: terraform
+          # フェーズ2: 指摘があれば CI を失敗させる（gate）。
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          format: table
+          # 棚卸しで「許容」と判断した指摘を理由付きで管理する無視リスト。
+          # （scan-ref 配下でも確実に読ませるためパスを明示指定する）
+          trivyignores: terraform/.trivyignore

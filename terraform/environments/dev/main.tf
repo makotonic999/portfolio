@@ -65,12 +65,75 @@ resource "aws_s3_bucket_public_access_block" "site" {
   restrict_public_buckets = true
 }
 
+# サイトバケットの保管時暗号化（SSE-S3 / AES256）。
+# 公開コンテンツ中心のためコスト・運用面から CMK ではなく SSE-S3 を採用する。
+resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
+  bucket = aws_s3_bucket.site.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# サイトバケットのバージョニング（誤削除・上書きからの復旧性を確保）
+resource "aws_s3_bucket_versioning" "site" {
+  bucket = aws_s3_bucket.site.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# CloudFront アクセスログ格納用バケット
+resource "aws_s3_bucket" "cf_logs" {
+  bucket        = "okada-chikuro-cf-logs-${random_string.bucket_suffix.result}"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_public_access_block" "cf_logs" {
+  bucket                  = aws_s3_bucket.cf_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "cf_logs" {
+  bucket = aws_s3_bucket.cf_logs.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "cf_logs" {
+  bucket = aws_s3_bucket.cf_logs.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# CloudFront ログ配信は ACL を利用するため、オブジェクト所有権で ACL を許可する。
+resource "aws_s3_bucket_ownership_controls" "cf_logs" {
+  bucket = aws_s3_bucket.cf_logs.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
 # 6. CloudFront Origin Access Control (OAC)
 resource "aws_cloudfront_origin_access_control" "oac" {
   name                              = "s3-oac-${aws_s3_bucket.site.id}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
+}
+
+# CloudFront マネージドキャッシュポリシー（CachingOptimized）を参照。
+# forwarded_values（レガシー構文）に代わる AWS 推奨のキャッシュ制御方式。
+data "aws_cloudfront_cache_policy" "caching_optimized" {
+  name = "Managed-CachingOptimized"
 }
 
 # 7. CloudFront ディストリビューション
@@ -85,6 +148,13 @@ resource "aws_cloudfront_distribution" "site" {
   is_ipv6_enabled     = true
   default_root_object = "index.html"
 
+  # アクセスログ出力（全リクエストの監査証跡を保存する）
+  logging_config {
+    include_cookies = false
+    bucket          = aws_s3_bucket.cf_logs.bucket_domain_name
+    prefix          = "cloudfront/"
+  }
+
   # 独自ドメイン（CAME / CNAME）の設定
   aliases = [var.domain_name, "www.${var.domain_name}"]
 
@@ -93,17 +163,10 @@ resource "aws_cloudfront_distribution" "site" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "S3-${aws_s3_bucket.site.id}"
 
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
+    # マネージドキャッシュポリシーを使用（forwarded_values からの移行）
+    cache_policy_id = data.aws_cloudfront_cache_policy.caching_optimized.id
 
     viewer_protocol_policy = "redirect-to-https"
-    min_ttl                = 0
-    default_ttl            = 3600
-    max_ttl                = 86400
   }
 
   restrictions {
@@ -276,10 +339,31 @@ resource "aws_apigatewayv2_api" "http_api" {
   }
 }
 
+# API Gateway アクセスログ用の CloudWatch Logs ロググループ
+resource "aws_cloudwatch_log_group" "apigw_access" {
+  name              = "/aws/apigateway/contact-form-api"
+  retention_in_days = 14
+}
+
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.http_api.id
   name        = "$default"
   auto_deploy = true
+
+  # アクセスログ設定（全リクエストを CloudWatch Logs に JSON 形式で記録）
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.apigw_access.arn
+    format = jsonencode({
+      requestId      = "$context.requestId"
+      ip             = "$context.identity.sourceIp"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      routeKey       = "$context.routeKey"
+      status         = "$context.status"
+      protocol       = "$context.protocol"
+      responseLength = "$context.responseLength"
+    })
+  }
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration" {
