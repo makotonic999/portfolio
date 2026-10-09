@@ -1,0 +1,37 @@
+# ============================================================
+# terraform.tfvars.example
+#
+# 機密・環境依存の値のサンプル。実値は含めない。
+# 使い方:
+#   1) このファイルを terraform.tfvars にコピー
+#        cp terraform.tfvars.example terraform.tfvars
+#   2) 各値を自分の環境の実値に書き換える
+#   3) terraform.tfvars は .gitignore 済みなのでコミットされない
+# ============================================================
+
+# リソースをデプロイする AWS アカウントID（12桁）
+aws_account_id = "111111111111"
+
+# Route53 ホストゾーンを管理する AWS アカウントID（12桁）
+# 単一アカウント構成なら aws_account_id と同じ値でよい
+dns_account_id = "222222222222"
+
+# お問い合わせフォームの送信元／通知先メールアドレス（SES で検証済みのもの）
+contact_email = "you@example.com"
+
+# --- 以下は既定値があるため、変更が必要な場合のみ設定 ---
+
+# サイトのルートドメイン名
+# domain_name = "example.com"
+
+# CORS を許可するオリジン
+# allowed_origins = [
+#   "https://example.com",
+#   "https://www.example.com",
+# ]
+
+# OIDC でロールを引き受けられる GitHub リポジトリ（owner/repo）
+# github_repository = "your-account/your-repo"
+
+# デプロイを許可する Git ref
+# github_deploy_refs = ["refs/heads/main"]

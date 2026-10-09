@@ -8,10 +8,24 @@ variable "domain_name" {
 
 # お問い合わせフォームの送信元・通知先メールアドレス
 # （SES で検証済みのアドレスを指定する）
+# 実値は公開リポジトリに含めず、terraform.tfvars で渡す（例は terraform.tfvars.example を参照）。
 variable "contact_email" {
   type        = string
   description = "お問い合わせフォームの送信元／通知先メールアドレス（SES検証済み）"
-  default     = "makotonic999@gmail.com"
+}
+
+# 自 AWS アカウントID（OIDC プロバイダ ARN の組み立てに使用）。
+# 実値は公開リポジトリに含めず、terraform.tfvars で渡す。
+variable "aws_account_id" {
+  type        = string
+  description = "リソースをデプロイする AWS アカウントID（12桁）"
+}
+
+# DNS（Route53）を管理する AWS アカウントID。
+# クロスアカウントの assume role ARN の組み立てに使用する。
+variable "dns_account_id" {
+  type        = string
+  description = "Route53 ホストゾーンを管理する AWS アカウントID（12桁）"
 }
 
 # CORS を許可するオリジン（本番ドメインのみを許可し、ワイルドカードを避ける）

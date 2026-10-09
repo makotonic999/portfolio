@@ -186,8 +186,14 @@ provider "aws" { alias = "management"; assume_role { role_arn = "..." } }
 ### デプロイ手順
 
 ```bash
-# 1. ステート用リソースを先に作成（初回のみ）
+# 0. 機密・環境依存の値を変数ファイルで用意（初回のみ）
+#    AWSアカウントIDや通知先メールなどの実値はリポジトリに含めない。
+#    example をコピーして自分の環境の値に書き換える（terraform.tfvars は .gitignore 済み）。
 cd terraform/environments/dev
+cp terraform.tfvars.example terraform.tfvars
+# エディタで terraform.tfvars を開き、aws_account_id / dns_account_id / contact_email を設定
+
+# 1. ステート用リソースを先に作成（初回のみ）
 # backend.tf の backend "s3" ブロックをコメントアウトした状態で実行
 terraform init
 terraform apply -target=aws_s3_bucket.tf_state
@@ -198,6 +204,8 @@ terraform init -migrate-state
 # 3. 残りのリソースをデプロイ
 terraform apply
 ```
+
+> 機密値の扱い: AWSアカウントID・証明書ARN・通知先メールなどは変数化し、実値は `terraform.tfvars`（Git管理外）で渡す。リポジトリには実値を書かないダミーの `terraform.tfvars.example` のみを含める。
 
 ### フロントエンドの手動デプロイ
 

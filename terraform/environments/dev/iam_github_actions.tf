@@ -20,7 +20,7 @@ resource "aws_iam_role" "github_actions_backend_deploy" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::532970129307:oidc-provider/token.actions.githubusercontent.com"
+          Federated = "arn:aws:iam::${var.aws_account_id}:oidc-provider/token.actions.githubusercontent.com"
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
@@ -82,7 +82,7 @@ resource "aws_iam_role" "github_actions_deploy" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::532970129307:oidc-provider/token.actions.githubusercontent.com"
+          Federated = "arn:aws:iam::${var.aws_account_id}:oidc-provider/token.actions.githubusercontent.com"
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
