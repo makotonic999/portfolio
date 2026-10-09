@@ -4,9 +4,12 @@ name: Terraform CI
 # セキュリティ」を PR 時に自動チェックするためのワークフロー。
 #
 # 【導入方針】段階的導入
-#   フェーズ1（現在）: 検出するが CI は失敗させない（soft-fail / 可視化モード）。
-#                      まず既存コードの指摘を棚卸しし、是々非々で対処する。
-#   フェーズ2（将来）: 棚卸し後、tflint / tfsec を厳格化（gate）して回帰を防ぐ。
+#   フェーズ1（完了）: 検出するが CI は失敗させない（soft-fail / 可視化モード）。
+#                      既存コードの指摘を棚卸しし、是々非々で対処した。
+#   フェーズ2（現在）: 棚卸し後、tflint / Trivy を gate 化して回帰を防ぐ。
+#                      - tflint: 指摘があれば CI を失敗させる（|| true を撤去）。
+#                      - Trivy : exit-code=1 で失敗させる。許容する指摘は
+#                                terraform/.trivyignore に理由付きで管理する。
 
 on:
   pull_request:
@@ -71,14 +74,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # フェーズ1: 検出のみ（CIは落とさない）。--minimum-failure-severity=error でも
-      # 失敗させないよう、終了コードを無視して可視化に徹する。
-      - name: Run TFLint (soft-fail / visualize)
-        run: tflint --recursive --format compact || true
+      # フェーズ2: gate 化。指摘があれば CI を失敗させる（終了コードをそのまま伝播）。
+      - name: Run TFLint (gate)
+        run: tflint --recursive --format compact
         working-directory: terraform
 
-  tfsec:
-    name: tfsec (security scan)
+  trivy:
+    name: trivy (security scan)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -86,12 +88,15 @@ jobs:
 
       # Trivy の IaC スキャンで Terraform のセキュリティ設定ミスを検出する。
       # （tfsec は Trivy に統合済みのため Trivy を利用）
-      - name: Run Trivy IaC scan (soft-fail / visualize)
+      - name: Run Trivy IaC scan (gate)
         uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: config
           scan-ref: terraform
-          # フェーズ1: 検出するが CI は失敗させない（可視化のみ）
-          exit-code: '0'
+          # フェーズ2: 指摘があれば CI を失敗させる（gate）。
+          exit-code: '1'
           severity: 'CRITICAL,HIGH,MEDIUM'
           format: table
+          # 棚卸しで「許容」と判断した指摘を理由付きで管理する無視リスト。
+          # （scan-ref 配下でも確実に読ませるためパスを明示指定する）
+          trivyignores: terraform/.trivyignore
