@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/oidc-test
     paths:
       - 'frontend/**'
       - '.github/workflows/deploy-frontend.yml'
