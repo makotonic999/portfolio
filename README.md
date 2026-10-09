@@ -70,7 +70,8 @@ portfolio/
 ├── .github/
 │   └── workflows/
 │       ├── backend-ci.yml        # バックエンドCI/CD（ECRへのDockerイメージプッシュ）
-│       └── deploy-frontend.yml   # フロントエンドデプロイ（S3同期 + CloudFrontキャッシュ削除）
+│       ├── deploy-frontend.yml   # フロントエンドデプロイ（S3同期 + CloudFrontキャッシュ削除）
+│       └── terraform-ci.yml      # IaC向けCI（fmt/validate/tflint/Trivy によるセキュリティ・ベストプラクティス検査）
 ├── backend/
 │   ├── src/
 │   │   └── lambda_function.py    # Lambda関数（お問い合わせフォーム処理 / SESメール送信）
@@ -85,6 +86,8 @@ portfolio/
 │   ├── index.html                # ポートフォリオメインページ（About / Skills / Works / Contact）
 │   └── architecture.html         # システム構成紹介ページ
 ├── terraform/
+│   ├── .tflint.hcl                   # tflint 設定（terraform/aws ルールセット）
+│   ├── .trivyignore                  # Trivy 無視リスト（許容する指摘を理由付きで管理）
 │   └── environments/
 │       └── dev/
 │           ├── backend.tf            # S3リモートステート設定
@@ -159,6 +162,16 @@ provider "aws" { alias = "management"; assume_role { role_arn = "..." } }
 3. DockerイメージをビルドしてECRへプッシュ
 
 > 両ワークフローともOIDC認証（シークレットレス）を採用。
+
+### IaC（`terraform-ci.yml`）
+
+`terraform/` 配下の変更を含むPR（および `main` へのプッシュ）で自動実行。IaCの品質とセキュリティをゲートする。
+
+1. `terraform fmt -check` / `terraform validate`（整形統一・構文妥当性）
+2. `tflint`（命名・非推奨構文・AWSベストプラクティス検査）
+3. `Trivy`（IaCセキュリティスキャン）
+
+> AWS認証情報は不要（`terraform init -backend=false` で検証）。許容する指摘は `terraform/.trivyignore` に理由付きで管理する。
 
 ---
 
