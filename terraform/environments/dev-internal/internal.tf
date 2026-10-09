@@ -2,19 +2,39 @@
 # 社内（客先提示）用ポートフォリオ
 #   profile.okada-chikuro-kougyousyo.com
 #
-# 本体（main.tf）には一切手を加えず、別ファイルで追加する。
-# ACM 証明書は main.tf の *.${var.domain_name} ワイルドカード証明書
-# （aws_acm_certificate_validation.cert）をそのまま流用する。
+# 【state 分離方針】
+#   本体（environments/dev）とは独立した state（dev/profile.tfstate）で管理する。
+#   本体が「所有」する共有インフラ（ACM ワイルドカード証明書 / Route 53 ホスト
+#   ゾーン）は data source で「参照のみ」行い、二重管理・相互 destroy を避ける。
 # ==================================================
 
-# サブドメイン名（profile.<domain>）
 locals {
   internal_subdomain = "profile.${var.domain_name}"
 }
 
+# --- 共有インフラの参照（所有は本体 environments/dev 側） ---
+
+# ワイルドカード証明書（*.<domain> を含む）。us-east-1 で本体が発行・管理。
+data "aws_acm_certificate" "wildcard" {
+  provider    = aws.us_east_1
+  domain      = var.domain_name
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
+# ルートドメインのホストゾーン（管理アカウント側）。
+data "aws_route53_zone" "main" {
+  provider     = aws.management
+  name         = var.domain_name
+  private_zone = false
+}
+
+# --- 社内サイト本体（この state が所有する 6 リソース） ---
+
 # 1. S3 バケット（社内用 Web ホスティング）
+#    バケット名は既存リソースに一致させる（分離は import により既存を取り込む）。
 resource "aws_s3_bucket" "site_internal" {
-  bucket        = "okada-chikuro-site-internal-${random_string.bucket_suffix.result}"
+  bucket        = "okada-chikuro-site-internal-hmd17889"
   force_destroy = true
 }
 
@@ -47,7 +67,6 @@ resource "aws_cloudfront_distribution" "site_internal" {
   is_ipv6_enabled     = true
   default_root_object = "index.html"
 
-  # 独自サブドメイン
   aliases = [local.internal_subdomain]
 
   default_cache_behavior {
@@ -74,9 +93,9 @@ resource "aws_cloudfront_distribution" "site_internal" {
     }
   }
 
-  # ACM 証明書は本体のワイルドカード証明書を流用（*.<domain> を含む）
+  # 本体のワイルドカード証明書を参照（*.<domain> を含む）
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate_validation.cert.certificate_arn
+    acm_certificate_arn      = data.aws_acm_certificate.wildcard.arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
